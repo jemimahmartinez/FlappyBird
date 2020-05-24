@@ -1,0 +1,40 @@
+library IEEE;
+use IEEE.std_logic_1164.all;
+use IEEE.std_logic_unsigned.all;
+
+entity BCD_Counter is
+  port(Clk, Enable, Dir, Init : in std_logic;
+    Q_Out : out std_logic_vector(3 downto 0));
+end entity BCD_Counter;
+
+architecture behaviour of BCD_Counter is
+  signal counter: std_logic_vector(3 downto 0) := "0000";
+  begin
+    process(Clk)
+       begin
+        if (rising_edge(Clk)) then
+          if (Init = '0') then
+            case Dir is
+              when '0' => counter <= "0000";
+              when others => counter <= "1001";
+            end case;
+          elsif (Enable = '0') then
+            case Dir is 
+              when '0' => --up counter
+                if (counter = "1001") then
+                  counter <= "0000";
+                else 
+                  counter <= counter + 1;
+                end if;
+              when others => --down counter
+                if (counter = "0000") then
+                  counter<= "1001";
+                else
+                  counter<= counter - 1;
+                end if;
+            end case;
+          end if;
+        end if;
+    end process;
+    Q_Out<= counter;  
+end architecture behaviour;

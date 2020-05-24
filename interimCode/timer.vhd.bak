@@ -1,0 +1,55 @@
+library IEEE;
+use IEEE.std_logic_1164.all;
+
+entity timer is
+  port(Clock, Load, Start : in std_logic;
+	 minTen, minOne, secTen, secOne : out std_logic_vector(3 downto 0));
+end entity timer;
+
+architecture Structural of timer is
+  
+  component BCD_Counter is
+    port(Clk, Enable, Dir, Init : in std_logic;
+      Q_Out : out std_logic_vector(3 downto 0));
+  end component BCD_Counter;
+  
+  signal minute_ten, minute_one, second_ten, second_one : std_logic_vector(3 downto 0);
+  signal enable_minten, enable_minone, enable_secten, 
+         Load_secten, Load_minone, Load_minten, timer_div : std_logic;
+  signal min_ten, min_one, sec_ten, sec_one : std_logic_vector(6 downto 0);
+  signal time, register_time : std_logic_vector(15 downto 0);
+    
+  begin
+      
+  MinuteTenBCD: BCD_Counter 
+    port map (Init => Load_minten, DIR => '0', Clk => Clock, Enable => enable_minten, Q_Out => minute_ten);
+  MinuteOneBCD: BCD_Counter
+    port map (Init => Load_minone, DIR => '0', Clk => Clock, Enable => enable_minone, Q_Out => minute_one);
+  SecondTenBCD: BCD_Counter
+    port map (Init => Load_secten, DIR => '0', Clk => Clock, Enable => enable_secten, Q_Out => second_ten);
+  SecondOneBCD: BCD_Counter
+    port map (Init => Load, DIR => '0', Clk => Clock, Enable => Start, Q_Out => second_one);
+  
+      	       
+  enable_secten <= '1' when (second_one = "1001") else -- --:-9
+                   '0' when (second_one /= "1001"); -- --:-9
+  
+  enable_minone <= '1' when (second_ten = "0101" and second_one = "1001") else -- --:59
+                   '0' when (second_ten /= "0000" and second_one /= "0000"); -- --:00
+  
+  enable_minten <= '1' when (minute_one = "1001" and second_ten = "0101" 
+                       and second_one = "1000") else -- -9:58
+                   '0' when (minute_one /= "0000" and second_ten /= "0000"
+                       and second_one /= "0000"); -- -0:00
+  
+  Load_minten <= '1' when (minute_ten = "0101" and minute_one = "1001"
+                     and second_ten = "0101" and second_one = "1001") else --59:59
+                 '0' when ((minute_ten /= "0000" and minute_one /= "0000" 
+                     and second_ten /= "0000" and second_one /= "0000") or Load = '0'); --00:00
+                    
+	minTen <= minute_ten;
+	minOne <= minute_one;
+	secTen <= second_ten;
+	secOne <= second_one;
+
+end architecture Structural;
