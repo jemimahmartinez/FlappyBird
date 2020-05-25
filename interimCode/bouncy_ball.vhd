@@ -42,7 +42,7 @@ begin
 	-- Move ball once every vertical sync
 	if (rising_edge(vert_sync)) then		
 		-- Bounce off top or bottom of the screen
-		if ( ('0' & ball_y_pos >= CONV_STD_LOGIC_VECTOR(479,10) - size)) then
+		if ( ('0' & ball_y_pos >= CONV_STD_LOGIC_VECTOR(479,10) - size) or left_button = '1') then
 --			ball_y_motion <= - CONV_STD_LOGIC_VECTOR(1,10);
 			case ds0 is
 				when '0' =>
